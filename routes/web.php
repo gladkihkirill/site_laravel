@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'home'], function(){
 
+    Route::get('/', function(){
+        return view('app');
+    });
+
     Route::resource('calendar/day', 'Calendar\DayResourceController')
     ->names('calendar.day')->only(['index','update','store','destroy']);
     

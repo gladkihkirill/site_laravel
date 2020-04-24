@@ -11,7 +11,7 @@ $(document).ready(function() {
     // //modal show add
     $('body').on('click', '.add', function() {
         $('.modal').show(500);
-        $('.modal-title').text('Добавиnm врмя для записи');
+        $('.modal-title').text('Добавить врмя для записи');
         $('.save').val('save');
         reset();
     });
@@ -37,75 +37,93 @@ $(document).ready(function() {
 
     // //modal show edit
 
-    // $('body').on('click', '.edit', function() {
-    //     reset();
+    $('body').on('click', '.edit', function() {
+        reset();
 
-    //     let day = this.dataset.date;
+        let id = $(this)[0].dataset.id;
 
-    //     $('#date').val(day);
-    //     $('.save').val('edit');
-    //     $('.save').attr('data-id', this.dataset.id);
-    //     $('.modal-title').text('Редактировать день');
-    //     $('.modal').show(500);
-    // });
+        let getDate = (string) => new Date(0, 0, 0, string.split('-')[0], string.split('-')[1]);
+
+        let formatM = function(minutes) {
+            if (minutes === 0) {
+                return '00';
+            } else
+                return minutes;
+        }
+
+        let formatH = function(hours) {
+            if (hours < 10) {
+                return '0' + hours;
+            } else
+                return hours;
+        }
+
+        let begin = getDate($('#item-' + id)[0].children[0].innerText);
+        let end = getDate($('#item-' + id)[0].children[1].innerText);
 
 
+        $('#begin').val(formatH(begin.getHours()) + ':' + formatM(begin.getMinutes()));
+        $('#end').val(formatH(end.getHours()) + ':' + formatM(end.getMinutes()));
+
+
+        $('.save').val('edit');
+        $('.save').attr('data-id', this.dataset.id);
+        $('.modal-title').text('Редактировать время');
+        $('.modal').show(500);
+    });
 
     // //request to save
 
     $('body').on('click', '.save', function() {
-        // let value = $(this).val();
-        // let day = $('#date').val();
-        // let url = location.href;
+
+        let value = $(this).val();
 
         let begin = $('#begin').val();
         let end = $('#end').val();
 
+        let getDate = (string) => new Date(0, 0, 0, string.split(':')[0], string.split(':')[1]); //получение даты из строки (подставляются часы и минуты
+        let different = (getDate(end) - getDate(begin));
+
+        let hours = Math.floor((different % 86400000) / 3600000);
+        let minutes = Math.round(((different % 86400000) % 3600000) / 60000);
+
+        if (hours < 1) {
+            $('.alert-danger').text('Разница во времени должна быть минимум в час');
+
+            return 0;
+        }
+        if (value === 'edit') {
+
+            let id = $('.save')[0].dataset.id;
 
 
-        // if (value === 'edit') {
-        //     let id = $('.save')[0].dataset.id;
-        //     url = url + '/' + id;
+            axios.put(url + '/' + id, { 'begin': begin, 'end': end, 'day_id': day_id })
+                .then(function(response) {
+                    location.reload();
+                })
+                .catch(function(exception) {
+                    console.log(exception);
+                    // let error = exception.response.data.errors.day[0];
+                    // $('.alert-danger').text(error);
+                })
 
-        //     axios.put(url, { 'day': day })
-        //         .then(function(response) {
-        //             location.reload();
-        //         })
-        //         .catch(function(exception) {
-        //             let error = exception.response.data.errors.day[0];
-        //             $('.alert-danger').text(error);
-        //         })
-        // } else {
-        axios.post(url, { 'begin': begin, 'end': end, 'day_id': day_id })
-            .then(function(response) {
-                location.reload();
-            })
-            .catch(function(exception) {
-                console.log(exception.response);
-                let error = exception.response.data.errors.day[0];
-                $('.alert-danger').text(error);
-            })
-            // }
+        } else {
+            axios.post(url, { 'begin': begin, 'end': end, 'day_id': day_id })
+                .then(function(response) {
+                    location.reload();
+                })
+                .catch(function(exception) {
+
+                    let error = exception.response.data.errors;
+
+                    $('.alert-danger').text(error.begin + " " + error.end);
+                })
+        }
     });
 
-    // //delete day
-    // $('body').on('click', '.delete', function() {
-    //     let url = location.href;
-
-    //     let id = this.dataset.id;
-
-    //     if (confirm('Удалить?')) {
-    //         axios.delete(url + '/' + id)
-    //             .then(function(response) {
-    //                 $('#item-' + id).hide('500', function() {
-    //                     $('#item-' + id).remove();
-    //                 });
-    //             })
-    //     }
-    // });
-
-    // function reset() {
-    //     $('.alert-danger').text('');
-    //     $('#date').val('');
-    // }
+    function reset() {
+        $('.alert-danger').text('');
+        $('#begin').val('');
+        $('#end').val('');
+    }
 });

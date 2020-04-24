@@ -22,6 +22,7 @@ $(document).ready(function() {
         $('.save').val('edit');
         $('.save').attr('data-id', this.dataset.id);
         $('.modal-title').text('Редактировать день');
+
         $('.modal').show(500);
     });
 

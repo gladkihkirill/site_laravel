@@ -28,6 +28,15 @@ class HourRepository extends AbstractRepository
         return $result;
     }
 
+    public function update($data, $id)
+    {
+        $model = $this->getEdit($id);
+      
+        $model->update($data);
+
+        return $model;
+    }
+
     public function save($data)
     {
         $result = Model::create($data);
